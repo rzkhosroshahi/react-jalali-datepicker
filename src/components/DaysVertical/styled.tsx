@@ -6,7 +6,7 @@ export const DaysBody = styled.div<{
   isGregorian?: boolean;
   ref?: any;
 }>`
-  width: ${(props) => (props.isDatePicker ? "296px" : "280px")};
+  width: ${(props) => (props.isDatePicker ? "170px" : "160px")};
   // max-height: 85%;
   position: relative;
   overflow: auto;
@@ -31,11 +31,12 @@ export const DaysBody = styled.div<{
     margin: 0;
   }
   @media (min-width: 576px) {
-    width: ${(props) => (props.isDatePicker ? "331px" : "315px")};
+    width: ${(props) => (props.isDatePicker ? "290px" : "280px")};
   }
 `;
 
 export const DaysWrapper = styled.div<{ isDatePicker?: boolean }>`
+  display: flex;
   width: 100%;
   max-width: 100%;
   overflow: hidden;
@@ -43,6 +44,7 @@ export const DaysWrapper = styled.div<{ isDatePicker?: boolean }>`
   /* border-collapse: separate;
   border-spacing: 0 0.5rem; */
   padding: ${(props) => (props.isDatePicker ? `${8 / 16}rem` : 0)};
+  margin-top: 1rem;
 
   th {
     font-size: 1rem;
@@ -55,20 +57,19 @@ export const StyledUl = styled.ul`
   list-style: none;
   margin: 0;
   padding: 0;
-  /* display: flex; */
 
   li {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 40px;
-    height: 40px;
-    margin: 0;
+    width: 25px;
+    height: 25px;
+    margin: 0 5px;
     padding: 0;
 
     @media (min-width: 576px) {
-      width: 45px;
-      height: 45px;
+      width: 30px;
+      height: 30px;
     }
   }
 `;
@@ -78,17 +79,27 @@ export const DaysNameList = styled(StyledUl)`
   color: ${(props) => props.theme.weekDaysColor};
 
   display: grid;
-  grid-template: 1fr / repeat(7, 1fr);
+  grid-template: repeat(7, auto) / 1fr;
   justify-content: center;
   justify-items: center;
   align-items: center;
   align-content: center;
   text-align: center;
   /* gap: 0.5em; */
+  li {
+    font-size: small;
+    justify-content: end;
+    @media (min-width: 576px) {
+      width: 60px;
+      height: 30px;
+    }
+  }
 `;
 
 export const DaysNumberList = styled(StyledUl)`
-  display: contents;
+  display: flex;
+  flex-direction: column;
+  font-size: small;
   li {
     /* margin-bottom: 0.5rem; */
   }
@@ -96,7 +107,7 @@ export const DaysNumberList = styled(StyledUl)`
 
 export const DaysNumberListWrapper = styled.div`
   display: grid;
-  grid-template: repeat(6, 1fr) / repeat(7, 1fr);
+  grid-template: repeat(7, auto) / repeat(6, 1fr);
   justify-content: center;
   justify-items: center;
   align-items: center;

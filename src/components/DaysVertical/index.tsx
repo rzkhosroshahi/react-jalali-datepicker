@@ -2,7 +2,7 @@ import * as React from "react";
 import { ThemeProvider } from "../../theme";
 import { TimePicker } from "../TimePicker";
 import { IDaysProps } from "./types";
-import { DaysHead } from "../DaysHead";
+// import { DaysHead } from "../DaysHead";
 import { Day } from "../Day";
 import {
   ButtonsDivWrapper,
@@ -17,7 +17,8 @@ import {
 } from "./styled";
 import { chunk } from "../../utils/chunk";
 import { IDays } from "../../utils/daysInMonth";
-import { fa, weekDayNames } from "../../utils";
+import { fa, weekDayNamesComplete } from "../../utils";
+import { DaysHead } from "../DaysHead";
 
 const boolDataset = (arg: boolean) => {
   if (arg) {
@@ -59,6 +60,7 @@ export const Days = React.forwardRef<Element, IDaysProps>(
       holiday = [],
       isGregorian,
       plain,
+      hasHead,
     },
     ref,
   ) => {
@@ -75,19 +77,21 @@ export const Days = React.forwardRef<Element, IDaysProps>(
           ref={ref}
           isGregorian={isGregorian}
         >
-          <DaysHead
-            monthName={monthName}
-            datePickerStatus={selectedPickerStatus}
-            ArrowLeft={ArrowLeft}
-            ArrowRight={ArrowRight}
-            increaseMonth={increaseMonth}
-            decreaseMonth={decreaseMonth}
-            hour={hour}
-            minute={minute}
-            timePickerView={timePickerView}
-            toggleView={toggleView}
-            isGregorian={isGregorian}
-          />
+          {hasHead && (
+            <DaysHead
+              monthName={monthName}
+              datePickerStatus={selectedPickerStatus}
+              ArrowLeft={ArrowLeft}
+              ArrowRight={ArrowRight}
+              increaseMonth={increaseMonth}
+              decreaseMonth={decreaseMonth}
+              hour={hour}
+              minute={minute}
+              timePickerView={timePickerView}
+              toggleView={toggleView}
+              isGregorian={isGregorian}
+            />
+          )}
           {timePicker && timePickerView ? (
             <TimeDays data-testid="dp__timePicker">
               <TimePicker
@@ -107,7 +111,7 @@ export const Days = React.forwardRef<Element, IDaysProps>(
                 isDatePicker={isDatePicker}
               >
                 <DaysNameList>
-                  {weekDayNames({ isGregorian }).map((name) => (
+                  {weekDayNamesComplete({ isGregorian }).map((name) => (
                     <li key={name}>{name}</li>
                   ))}
                 </DaysNameList>
@@ -242,7 +246,7 @@ export const Days = React.forwardRef<Element, IDaysProps>(
 //                 isDatePicker={isDatePicker}
 //               >
 //                 <DaysNameList>
-//                   {weekDayNames.map(name => (
+//                   {weekDayNamesComplete.map(name => (
 //                     <li key={name}>{name}</li>
 //                   ))}
 //                 </DaysNameList>

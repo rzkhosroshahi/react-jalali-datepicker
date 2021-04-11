@@ -1,217 +1,264 @@
 import * as React from "react";
+import styled from "../../theme";
+import { SyntheticEvent } from "react";
 import * as moment from "jalali-moment";
 import * as Icons from "../Icons";
-import MaskedInput from "react-text-mask";
+// import MaskedInput from "react-text-mask";
+
+import TetherComponent from "react-tether";
+
 import { daysInMonth } from "../../utils/daysInMonth";
 import { defaultDatePickerTheme } from "../../theme";
 import { Modal } from "../Modal";
 import { Days } from "../Days";
 import { datePickerStatus } from "../../utils/rangeHelper";
-import { IDatePickerProps, IDatePickerState } from "./types";
-import { DatePickerDiv } from "./styled";
+import { IDatePickerProps } from "./types";
+import { DatePickerDiv, InputMaskStyled } from "./styled";
 import {
-  formatDate,
-  formatDateTime,
-  formatJalaliDate,
+  formatDateFromString,
+  getFormatTime,
+  getFormatDate,
   inputFaDateMask,
   inputFaDateWithTimeMask,
+  inputEnDateWithTimeMask,
+  inputEnDateMask,
+  toPersianDigits,
 } from "../../utils";
 
-export class DatePicker extends React.PureComponent<
-  IDatePickerProps,
-  IDatePickerState
-> {
-  public static defaultProps: Partial<IDatePickerProps> = {
-    value: moment(),
-    timePicker: true,
-    ArrowRight: Icons.ArrowRightCMP,
-    ArrowLeft: Icons.ArrowLeftCMP,
-    modalZIndex: 9999,
-    theme: defaultDatePickerTheme,
-    weekend: [6],
-    DateIcon: Icons.DateIcon,
-    ClockIcon: Icons.ClockIcon,
-    className: "dp__input",
+export const DatePicker: React.FC<IDatePickerProps> = ({
+  label,
+  value: defaultValue,
+  timePicker = true,
+  ArrowRight = Icons.ArrowRightCMP,
+  ArrowLeft = Icons.ArrowLeftCMP,
+  submittable = false,
+  modalZIndex = 9999,
+  theme = defaultDatePickerTheme,
+  weekend,
+  DateIcon = Icons.DateIcon,
+  ClockIcon = Icons.ClockIcon,
+  className = "dp__input",
+  onClickSubmitButton,
+  onDateChange,
+  open,
+  gregorian = false,
+  modal = false,
+  tetherAttachment,
+}) => {
+  const [initialValue, setInitialValue] = React.useState(moment());
+  const [value, setValue] = React.useState(moment());
+  const [cloneDays, setCloneDays] = React.useState(moment());
+  const [monthName, setMonthName] = React.useState("");
+  const [days, setDays] = React.useState([]);
+  const [isOpenModal, setIsOpenModal] = React.useState(open);
+  const [timePickerView, setTimePickerView] = React.useState(null);
+  const [dayStatus, setDayStatus] = React.useState(
+    datePickerStatus(moment(initialValue), { isGregorian: gregorian }),
+  );
+  const [hour, setHour] = React.useState(moment(initialValue).hour());
+  const [minute, setMinute] = React.useState(moment(initialValue).minute());
+
+  React.useEffect(() => {
+    if (defaultValue) {
+      const defaultValueasDate = formatDateFromString(defaultValue, {
+        isGregorian: gregorian,
+      });
+      setInitialValue(defaultValueasDate);
+      setValue(defaultValueasDate);
+    }
+  }, [defaultValue]);
+
+  React.useEffect(() => {
+    const { monthName: newMonthName, days: newDays } = daysInMonth(cloneDays, {
+      isGregorian: gregorian,
+    });
+    setDays((oldDays) => [...newDays]);
+    setMonthName(newMonthName);
+  }, [cloneDays]);
+
+  React.useEffect(() => {
+    setDayStatus(datePickerStatus(moment(value), { isGregorian: gregorian }));
+  }, [value]);
+
+  const changeMonth = (amount) => {
+    setCloneDays((oldClone) => oldClone?.clone().add(amount, "month"));
   };
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      value: moment(this.props.value),
-      cloneDays: moment(this.props.value),
-      monthName: "",
-      days: [],
-      isOpenModal: this.props.open,
-      timePickerView: false,
-      dayStatus: datePickerStatus(moment(this.props.value)),
-      hour: moment(this.props.value).hour(),
-      minute: moment(this.props.value).minute(),
-    };
-  }
+  const changeHour = (h) => {
+    setHour(value.hour(h).hour());
+  };
 
-  public componentDidMount(): void {
-    const { monthName, days } = daysInMonth(this.state.cloneDays);
-    this.setState(prevState => {
-      return {
-        days: [...prevState.days, ...days],
-        monthName,
-        initialValue: prevState.value,
-      };
-    });
-  }
-  public componentDidUpdate(
-    prevProps: Readonly<IDatePickerProps>,
-    prevState: Readonly<IDatePickerState>,
-  ): void {
-    if (!prevState.value.isSame(this.state.value)) {
-      this.setState({
-        dayStatus: datePickerStatus(moment(this.state.value)),
-      });
-    }
-    if (!prevState.cloneDays.isSame(this.state.cloneDays)) {
-      const { monthName, days } = daysInMonth(this.state.cloneDays);
-      this.setState(prevSetState => {
-        return {
-          days: [...prevSetState.days.slice(prevSetState.days.length), ...days],
-          monthName,
-        };
-      });
-    }
-    if (prevProps.open !== this.props.open) {
-      this.setState({
-        isOpenModal: this.props.open,
-      });
-    }
-    if (prevState.isOpenModal !== this.state.isOpenModal) {
-      const { onToggle } = this.props;
+  const changeMinute = (m) => {
+    setMinute(value.minute(m).minute());
+  };
 
-      if (typeof onToggle === "function") {
-        onToggle(this.state.isOpenModal);
+  const toggleModalOpen = () => {
+    setIsOpenModal((prev) => !prev);
+  };
+
+  const selectDay = () => ({
+    onClick: (e: SyntheticEvent<EventTarget>) => {
+      const { fadate } = (e.target as HTMLHtmlElement).dataset;
+      setValue(formatDateFromString(fadate, { isGregorian: gregorian }));
+      if (onDateChange) {
+        if (timePicker) {
+          onDateChange({ date: fadate, time: hour + ":" + minute });
+        } else onDateChange(fadate);
       }
-    }
-  }
+    },
+  });
 
-  public changeMonth = amount => {
-    this.setState(prevState => {
-      return {
-        cloneDays: prevState.cloneDays.clone().add(amount, "month"),
-      };
-    });
+  const cancelButton = () => {
+    setIsOpenModal(false);
+    setValue(() => initialValue as moment.Moment);
   };
-  public changeHour = value => {
-    this.setState({
-      hour: this.state.value.hour(value).hour(),
-    });
+
+  const submitButton = () => {
+    onClickSubmitButton?.(value);
+    setIsOpenModal(false);
+    setInitialValue(value);
   };
-  public changeMinute = value => {
-    this.setState({
-      minute: this.state.value.minute(value).minute(),
-    });
-  };
-  public toggleModalOpen = () => {
-    this.setState(prevState => {
-      return {
-        isOpenModal: !prevState.isOpenModal,
-      };
-    });
-  };
-  public toggleTimePickerView = e => {
-    e.preventDefault();
-    this.setState(prevState => {
-      return {
-        timePickerView: !prevState.timePickerView,
-      };
-    });
-  };
-  public selectDay = (e: React.SyntheticEvent<EventTarget>) => {
-    const { fadate } = (e.target as HTMLHtmlElement).dataset;
-    this.setState({
-      value: formatJalaliDate(fadate),
-    });
-  };
-  public daysEventListeners = () => {
-    return {
-      onClick: this.selectDay,
-    };
-  };
-  public cancelButton = () => {
-    this.setState(prevState => ({
-      isOpenModal: false,
-      value: prevState.initialValue,
-    }));
-  };
-  public submitButton = () => {
-    const { value } = this.state;
-    if (this.props.onClickSubmitButton) {
-      this.props.onClickSubmitButton({
-        value,
-      });
-    }
-    this.setState({
-      isOpenModal: false,
-      initialValue: this.state.value,
-    });
-  };
-  public render(): React.ReactNode {
-    const {
-      modalZIndex,
-      ArrowRight,
-      ArrowLeft,
-      DateIcon,
-      ClockIcon,
-      theme,
-      timePicker,
-      label,
-      className,
-    } = this.props;
-    return (
-      <DatePickerDiv>
-        <label>{label}</label>
-        <div>
-          <MaskedInput
+
+  const RenderInput = React.forwardRef(({}, ref: any) => (
+    <>
+      <label>{label}</label>
+      <div>
+        <span ref={ref}>
+          <InputMaskStyled
             className={className}
             data-testid="input-dp"
-            value={this.state.value.format(
-              timePicker ? formatDateTime : formatDate,
-            )}
-            mask={timePicker ? inputFaDateWithTimeMask : inputFaDateMask}
-            onClick={this.toggleModalOpen}
+            value={
+              gregorian
+                ? value.format(
+                    timePicker
+                      ? `${getFormatDate({
+                          isGregorian: gregorian,
+                        })} - ${getFormatTime()}`
+                      : getFormatDate({ isGregorian: gregorian }),
+                  )
+                : toPersianDigits(
+                    value.format(
+                      timePicker
+                        ? `${getFormatDate({
+                            isGregorian: gregorian,
+                          })} - ${getFormatTime()}`
+                        : getFormatDate({ isGregorian: gregorian }),
+                    ),
+                  )
+            }
+            mask={
+              timePicker
+                ? gregorian
+                  ? inputEnDateWithTimeMask
+                  : inputFaDateWithTimeMask
+                : gregorian
+                ? inputEnDateMask
+                : inputFaDateMask
+            }
+            onClick={toggleModalOpen}
+            // onBlur={(e) => {
+            //   setIsOpenModal(false);
+            // }}
             style={{ direction: "ltr" }}
           />
-        </div>
-        <Modal
-          isOpen={this.state.isOpenModal}
-          toggleOpen={this.toggleModalOpen}
-          modalZIndex={modalZIndex}
-        >
-          <Days
-            days={this.state.days}
-            monthName={this.state.monthName}
-            selectedPickerStatus={this.state.dayStatus}
-            selectedDay={this.state.value.format("jYYYY/jMM/jDD")}
-            daysEventListeners={this.daysEventListeners}
-            holiday={this.props.weekend}
-            theme={theme}
-            isRenderingButtons={true}
-            ArrowLeft={ArrowLeft}
-            ArrowRight={ArrowRight}
-            DateIcon={DateIcon}
-            ClockIcon={ClockIcon}
-            increaseMonth={() => this.changeMonth(1)}
-            decreaseMonth={() => this.changeMonth(-1)}
-            toggleView={this.toggleTimePickerView}
-            timePickerView={this.state.timePickerView}
-            hour={this.state.hour}
-            minute={this.state.minute}
-            changeHour={this.changeHour}
-            changeMinute={this.changeMinute}
-            onCancelButton={this.cancelButton}
-            onSubmitButton={this.submitButton}
-            timePicker={timePicker}
-            isDatePicker
-          />
-        </Modal>
-      </DatePickerDiv>
-    );
-  }
-}
+        </span>
+      </div>
+    </>
+  ));
+
+  return (
+    <DatePickerDiv isGregorian={gregorian}>
+      {modal ? (
+        <>
+          <RenderInput />
+          <Modal
+            isOpen={isOpenModal}
+            toggleOpen={toggleModalOpen}
+            modalZIndex={modalZIndex}
+          >
+            <Days
+              days={days}
+              monthName={monthName}
+              selectedPickerStatus={dayStatus}
+              selectedDay={value.format(
+                getFormatDate({ isGregorian: gregorian }),
+              )}
+              daysEventListeners={selectDay}
+              holiday={weekend || (gregorian ? [0, 6] : [6])}
+              theme={theme}
+              submittable={submittable}
+              ArrowLeft={gregorian ? ArrowRight : ArrowLeft}
+              ArrowRight={gregorian ? ArrowLeft : ArrowRight}
+              DateIcon={DateIcon}
+              ClockIcon={ClockIcon}
+              increaseMonth={() => changeMonth(1)}
+              decreaseMonth={() => changeMonth(-1)}
+              toggleView={setTimePickerView}
+              timePickerView={timePickerView}
+              hour={hour}
+              minute={minute}
+              changeHour={changeHour}
+              changeMinute={changeMinute}
+              onCancelButton={cancelButton}
+              onSubmitButton={submitButton}
+              timePicker={timePicker}
+              isDatePicker
+              isGregorian={gregorian}
+            />
+          </Modal>
+        </>
+      ) : (
+        <TetherComponent
+          attachment={tetherAttachment || "top center"}
+          constraints={[
+            {
+              to: "scrollParent",
+              attachment: "together",
+              pin: true,
+            },
+          ]}
+          offset="-10px 0"
+          // onResize={() => this.tether && this.tether.position()}
+          /* renderTarget: This is what the item will be tethered to, make sure to attach the ref */
+          renderTarget={(ref) => <RenderInput ref={ref} />}
+          /* renderElement: If present, this item will be tethered to the the component returned by renderTarget */
+          renderElement={(ref) =>
+            isOpenModal && (
+              <Days
+                ref={ref}
+                days={days}
+                monthName={monthName}
+                selectedPickerStatus={dayStatus}
+                selectedDay={value.format(
+                  getFormatDate({ isGregorian: gregorian }),
+                )}
+                daysEventListeners={selectDay}
+                holiday={weekend || (gregorian ? [0, 6] : [6])}
+                theme={theme}
+                submittable={submittable}
+                ArrowLeft={gregorian ? ArrowRight : ArrowLeft}
+                ArrowRight={gregorian ? ArrowLeft : ArrowRight}
+                DateIcon={DateIcon}
+                ClockIcon={ClockIcon}
+                increaseMonth={() => changeMonth(1)}
+                decreaseMonth={() => changeMonth(-1)}
+                toggleView={setTimePickerView}
+                timePickerView={timePickerView}
+                hour={hour}
+                minute={minute}
+                changeHour={changeHour}
+                changeMinute={changeMinute}
+                onCancelButton={cancelButton}
+                onSubmitButton={submitButton}
+                timePicker={timePicker}
+                isDatePicker
+                isGregorian={gregorian}
+                plain={true}
+              />
+            )
+          }
+        />
+      )}
+    </DatePickerDiv>
+  );
+};

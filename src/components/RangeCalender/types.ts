@@ -1,6 +1,7 @@
 import * as React from "react";
-import { IRangeDatePickerTheme } from "../../types";
+import { IRangeDate, IRangeDatePickerTheme, IRangeDays } from "../../types";
 import { Moment } from "jalali-moment";
+import { IDays } from "../../utils/daysInMonth";
 
 export interface IRangeDatePickerProps {
   gregorian?: boolean;
@@ -14,14 +15,10 @@ export interface IRangeDatePickerProps {
   submittable?: boolean;
   onClickSubmitButton?: (arg: any) => any;
   onDateChange?: (arg: any) => any;
-  fromLabel: string;
-  toLabel: string;
   open?: boolean;
   modal?: boolean;
   onToggle?: (arg?: boolean) => any;
   monthNameNew?: string;
-  className?: string;
-  tetherAttachment?: string;
 }
 
 // export interface IRangeDatePickerState {

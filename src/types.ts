@@ -23,6 +23,9 @@ export interface ITheme {
   weekDaysColor?: string;
   daysColor?: string;
   daysRound?: any;
+  daysRoundStart?: any;
+  daysRoundEnd?: any;
+  daysRoundContinue?: string;
   daysBackColor?: string;
   holidaysColor?: string;
   holidaysBackColor?: string;
@@ -45,6 +48,10 @@ export interface IRangeDatePickerTheme extends ITheme {
   endRangeColor?: string;
   sameRangeBackColor?: string;
   sameRangeColor?: string;
+  shadowDaysColor?: string;
+  shadowDaysBackColor?: string;
+  todayColor?: string;
+  todayBorderColor?: string;
 }
 
 export interface IDatePickerTheme extends ITheme {
@@ -60,6 +67,10 @@ export interface IDatePickerTheme extends ITheme {
   handBackColor?: string;
   handCircleColor?: string;
   selectedNumberColor?: string;
+  shadowDaysColor?: string;
+  shadowDaysBackColor?: string;
+  todayColor?: string;
+  todayBorderColor?: string;
 }
 
 export type styledThemes = IRangeDatePickerTheme & IDatePickerTheme;

@@ -18,6 +18,8 @@ export const defaultRangeTheme: IRangeDatePickerTheme = {
   daysBackColor: "#FFFFFF",
   holidaysColor: "#F50057",
   holidaysBackColor: "#FFFFFF",
+  shadowDaysColor: "#ccc",
+  shadowDaysBackColor: "#FFF",
   daysRound: "50%",
 
   // start end
@@ -29,6 +31,8 @@ export const defaultRangeTheme: IRangeDatePickerTheme = {
   continueRangeColor: "#000",
   sameRangeBackColor: "#fff",
   sameRangeColor: "#2979ff",
+  todayColor: "#617fdf",
+  todayBorderColor: "transparent",
 
   // buttons
   submitBackColor: "#D6D6D6",
@@ -59,10 +63,14 @@ export const defaultDatePickerTheme: IDatePickerTheme = {
   daysBackColor: "#FFFFFF",
   holidaysColor: "#edb53b",
   holidaysBackColor: "#FFFFFF",
+  shadowDaysColor: "#ccc",
+  shadowDaysBackColor: "#FFF",
   daysRound: "50%",
 
   selectDayColor: "#fff",
   selectDayBackColor: "#617fdf",
+  todayColor: "#000",
+  todayBorderColor: "#617fdf",
 
   // buttons
   submitBackColor: "#D6D6D6",
@@ -89,9 +97,7 @@ const {
   default: styled,
   ThemeProvider,
   keyframes,
-} = styledComponents as styledComponents.ThemedStyledComponentsModule<
-  styledThemes
->;
+} = styledComponents as styledComponents.ThemedStyledComponentsModule<styledThemes>;
 
 export { ThemeProvider, keyframes };
 export default styled;
